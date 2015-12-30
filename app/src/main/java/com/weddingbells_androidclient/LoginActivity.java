@@ -156,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 String requestBody = Util.build_Login_Registration_Parameters(stringMap);
                 ServerRequest sr = new ServerRequest();
-                JSONObject json = sr.getJSONFromUrl("http://10.0.2.2:8080/login", requestBody,"GET");
+                JSONObject json = sr.getJSONFromUrl("http://WeddingBells.cloudapp.net:28017/login", requestBody,"GET");
                 if(json != null){
                     try{
                         jsonstr = json.getString("response");

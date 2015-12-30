@@ -8,9 +8,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -36,6 +38,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private RadioGroup mGender;
     private View mRegisterFormView;
     private View mProgressView;
+    private String mGenderSelected = "Male";
 
     private static String REGISTRATION_SUCCESSFUL = "Successfully Registered";
     private static String INVALID_EMAIL = "Email Not Valid";
@@ -54,7 +57,16 @@ public class RegistrationActivity extends AppCompatActivity {
         mEmailView = (EditText) findViewById(R.id.editText3);
         mPasswordView = (EditText) findViewById(R.id.editText5);
         mPhoneNumberView = (EditText) findViewById(R.id.editText4);
+
         mGender = (RadioGroup) findViewById(R.id.radioGroup);
+        mGender.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                RadioButton rb = (RadioButton)findViewById(checkedId);
+                mGenderSelected = rb.getText().toString();
+                Log.e("sharath", "*** button id:" + checkedId + " name:" + mGenderSelected);
+            }
+        });
 
         mRegisterFormView = findViewById(R.id.register_form);
         mProgressView = findViewById(R.id.register_progress);
@@ -75,6 +87,7 @@ public class RegistrationActivity extends AppCompatActivity {
      */
     private void attemptRegistration() {
         showProgress(true);
+
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -82,19 +95,30 @@ public class RegistrationActivity extends AppCompatActivity {
         mLastNameView.setError(null);
         mPhoneNumberView.setError(null);
 
-        // Store values at the time of the login attempt.
-        String firstnametxt = mFirstNameView.getText().toString();
-        String lastnametxt = mLastNameView.getText().toString();
         String emailtxt = mEmailView.getText().toString();
         String passwordtxt = mPasswordView.getText().toString();
-        String phonenumbertxt = mPhoneNumberView.getText().toString();
-        //mGender.getFocusedChild().get
+
+        Map<String, String> stringMap = new HashMap<>();
+        stringMap.put("email", emailtxt);
+        stringMap.put("password", passwordtxt);
+        stringMap.put("firstname", mFirstNameView.getText().toString());
+        stringMap.put("lastname", mLastNameView.getText().toString());
+        stringMap.put("phonenumber", mPhoneNumberView.getText().toString());
+        stringMap.put("gender",mGenderSelected);
+
+        Map<String, String> stringMap = new HashMap<>();
+        stringMap.put("email", emailtxt);
+        stringMap.put("password", passwordtxt);
+        stringMap.put("firstname", mFirstNameView.getText().toString());
+        stringMap.put("lastname", mLastNameView.getText().toString());
+        stringMap.put("phonenumber", mPhoneNumberView.getText().toString());
+        stringMap.put("gender",mGenderSelected);
 
         if (mAuthTask != null || !isEmailValid(emailtxt) || !isPasswordValid(passwordtxt)) {
             return;
         }
 
-        mAuthTask = new UserRegisterTask(emailtxt,passwordtxt,firstnametxt,lastnametxt,phonenumbertxt);
+        mAuthTask = new UserRegisterTask(stringMap);
         mAuthTask.execute();
     }
 
@@ -114,18 +138,10 @@ public class RegistrationActivity extends AppCompatActivity {
      */
     public class UserRegisterTask extends AsyncTask<Void, Void, String> {
 
-        private final String mEmail;
-        private final String mPassword;
-        private final String mFirstName;
-        private final String mLastName;
-        private final String mPhoneNumber;
+        Map<String, String> mRegistrationMap;
 
-        UserRegisterTask(String email, String password,String firstname,String lastname,String phonenumber) {
-            mEmail = email;
-            mPassword = password;
-            mFirstName = firstname;
-            mLastName = lastname;
-            mPhoneNumber = phonenumber;
+        UserRegisterTask(Map<String, String> stringMap) {
+            mRegistrationMap = stringMap;
         }
 
         @Override
@@ -134,16 +150,9 @@ public class RegistrationActivity extends AppCompatActivity {
             String jsonstr = null;
             try {
                 // Simulate network access.
-                Map<String, String> stringMap = new HashMap<>();
-                stringMap.put("email", mEmail);
-                stringMap.put("password", mPassword);
-                stringMap.put("firstname", mFirstName);
-                stringMap.put("lastname", mLastName);
-                stringMap.put("phonenumber", mPhoneNumber);
-
-                String requestBody = Util.build_Login_Registration_Parameters(stringMap);
+                String requestBody = Util.build_Login_Registration_Parameters(mRegistrationMap);
                 ServerRequest sr = new ServerRequest();
-                JSONObject json = sr.getJSONFromUrl("http://10.0.2.2:8080/register", requestBody, "POST");
+                JSONObject json = sr.getJSONFromUrl("http://WeddingBells.cloudapp.net:28017/register", requestBody, "POST");
 
                 if(json != null){
                     try{
